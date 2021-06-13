@@ -203,6 +203,11 @@ class ColorSolid(BaseColor):
     def __repr__(self):
         return self.toString()
     
+    def __eq__(self, other):
+        if not isinstance(other, ColorSolid):
+            return NotImplemented # don't attempt to compare against unrelated types
+        return self.toString() == other.toString()
+        
     @staticmethod
     def parse(strIn):
         if type(strIn) != str or len(strIn)<=1:
@@ -445,6 +450,11 @@ class ColorGradient(BaseColor):
         
     def __repr__(self):
         return self.toString()
+    
+    def __eq__(self, other):
+        if not isinstance(other, ColorGradient):
+            return NotImplemented # don't attempt to compare against unrelated types
+        return self.toString() == other.toString()
     
     def generate(self):
         if self.interpMode == 'hsi':
