@@ -580,7 +580,37 @@ class ColorMode(object):
             print('Input string ''%s'' is not a currently configured/valid ColorMode' % strIn)
             return None
         return colorMode
+
+# Create class to combine a color mode with a color method
+class ColorMethod(object):
+    def __init__(self, inputMode:ColorMode, inputColor:BaseColor):
+        self.mode = inputMode
+        self.color = inputColor
+
+    def toString(self): # '[ColorMode] [Color]'
+        return self.mode.toString() + ' ' + self.color.toString()
         
+    def __repr__(self):
+        return self.toString()
+    
+    def __eq__(self, other):
+        if not isinstance(other, ColorMethod):
+            return NotImplemented # don't attempt to compare against unrelated types
+        return self.toString() == other.toString()
+    
+    @staticmethod
+    def parse(strIn:str):
+        try:
+            # Split into components, input should be [ColorMode + ' ' + BaseColor]
+            [modeStr, colorStr] = strIn.split(' ') # brackets are because I'm used to matlab requiring them...
+
+            # Try to parse each component
+            modeRef = ColorMode.parse(modeStr)
+            colorRef = BaseColor.parse(colorStr)
+            return modeRef, colorRef
+        except:
+            print('Invalid input ''%s'', unable to parse into a ColorMethod' % strIn)
+            return None, None
 
 
 ### Private functions
