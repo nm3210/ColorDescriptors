@@ -81,7 +81,7 @@ class ColorSolid(BaseColor):
                 self._red, self._green, self._blue, self._white = ColorSolid.hsi2rgbw(hue,saturation,intensity)
         
         else:
-            raise Exception('Must input either rgb[w] or hsi')
+            print('Must input either rgb[w] or hsi; output object not configured correctly')
             
     def copy(self, forceMode=None): # no copy module in circuitpython, so this'll have to do
         if (forceMode is not None and forceMode=='rgb') or self._inputType=='rgb':
@@ -152,7 +152,8 @@ class ColorSolid(BaseColor):
     @white.setter
     def white(self, valIn):
         if self._enableWhite == False and valIn is not None:
-            raise Exception("Unable to configure white color; enable the white LED first (via obj.enableWhite)")
+            print("Unable to configure white color; enable the white LED first (via obj.enableWhite)")
+            return
         self._white = valIn
         self._inputType = 'rgbw'
         self._hue, self._saturation, self._intensity = ColorSolid.rgbw2hsi(self.red,self.green,self.blue,self.white)
@@ -216,7 +217,8 @@ class ColorSolid(BaseColor):
         if strIn.lower().startswith('c'): # RGB color
             # Check for valid input
             if not (len(strIn) == 6+1 or len(strIn) == 8+1):
-                raise Exception('Invalid input length, rgb[w] must be 6 or 8 characters')
+                print('Invalid input length, rgb[w] must be 6 or 8 characters')
+                return None
             # Split string, convert to int, and return a new object
             splitStr = [int(strIn[i:i+2],16) for i in range(1, len(strIn), 2)]
             if len(splitStr) == 3:
@@ -225,7 +227,8 @@ class ColorSolid(BaseColor):
                 return ColorSolid(*splitStr)
         elif strIn.lower().startswith('h') and strIn.lower().endswith('w'): # HSI with white LED enabled
             if not len(strIn) == 10+1:
-                raise Exception('Invalid input length, hsi[w] must be 9 characters')
+                print('Invalid input length, hsi[w] must be 9 characters')
+                return None
             strIn = strIn[0:-1] # remove the last 'w'
             # Split string, convert to int, and return a new object
             splitStr = [int(strIn[i:i+3],16) for i in range(1, len(strIn), 3)]
@@ -233,12 +236,14 @@ class ColorSolid(BaseColor):
         elif strIn.lower().startswith('h') and not strIn.lower().endswith('w'): # HSI with the white LED disabled
             # Check for valid input
             if not len(strIn) == 9+1:
-                raise Exception('Invalid input length, hsi must be 9 characters')
+                print('Invalid input length, hsi must be 9 characters')
+                return None
             # Split string, convert to int, and return a new object
             splitStr = [int(strIn[i:i+3],16) for i in range(1, len(strIn), 3)]
             return ColorSolid(hue=splitStr[0], saturation=splitStr[1]/255, intensity=splitStr[2]/255, enableWhite=False)
         else:  
-            raise Exception('Unable to parse input string')
+            print('Unable to parse input string ''%s''' % strIn)
+            return None
         
     @staticmethod
     def rgbw2hsi(red, green, blue, white):
@@ -434,7 +439,8 @@ class ColorGradient(BaseColor):
     def nodes(self, valIn):
         # Check for valid input node type (needs to be ColorSolid(BaseColor))
         if valIn is not None and (((not isinstance(valIn,list) and not isinstance(valIn,tuple)) and not isinstance(valIn,ColorSolid)) or ((isinstance(valIn,list) or isinstance(valIn,tuple)) and not all(isinstance(x,ColorSolid) for x in valIn))):
-            raise Exception('Invalid nodes input, needs to be of class ColorSolid')
+            print('Invalid nodes input, needs to be of class ColorSolid')
+            return
         self._nodes = valIn
         self.gradient = self.generate()
         
