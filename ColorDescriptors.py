@@ -493,20 +493,19 @@ class ColorGradient(BaseColor):
             strIn = strIn[len(ColorGradient.colorPrefix):]
 
         # Try to match our format by looking for an ';'
-        strColors, strSteps = strIn.replace("(","").replace(")","").split(";",1)
+        [strColors, strSteps] = strIn.replace("(","").replace(")","").split(";",1)
         colors = [ColorSolid.parse(x) for x in strColors.split(',')]
         steps = int(strSteps)
         return ColorGradient(colors,steps)
 
 # Special color definitions
 class ColorSpecial(BaseColor):
-    allModes = []
+    allModes = {}
     colorPrefix = 'sp' + BaseColor.prefix
     
-    def __init__(self, name, func=None):
+    def __init__(self, name:str):
         self.name = name
-        self.func = func
-        ColorSpecial.allModes.append(self)
+        ColorSpecial.allModes[name] = self # keep track of all special colors
     
     def toString(self): # sp_[name]
         return ColorSpecial.colorPrefix + self.name
@@ -525,24 +524,41 @@ class ColorSpecial(BaseColor):
         if strIn.startswith(ColorSpecial.colorPrefix):
             strIn = strIn[len(ColorSpecial.colorPrefix):]
 
+        # Check if the input str is a key/mode
+        color = ColorSpecial.allModes.get(strIn)
+        if color is None:
+            print('Input string ''%s'' is not a currently configured/valid ColorSpecial' % strIn)
+            return None
+        return color
 
 # Class to control the mode of the lights
 class ColorMode(object):
-    allModes = []
+    allModes = {}
     
-    def __init__(self, name, func=None):
+    def __init__(self, name:str):
         self.name = name
-        self.func = func
-        ColorMode.allModes.append(self)
+        ColorMode.allModes[name] = self # keep track of all configured modes
+    
+    def toString(self):
+        return self.name
+        
+    def __repr__(self):
+        return self.toString()
+    
+    def __eq__(self, other):
+        if not isinstance(other, ColorMode):
+            return NotImplemented # don't attempt to compare against unrelated types
+        return self.toString() == other.toString()
     
     @staticmethod
-    def parse(strIn):
-        # Check for valid input
-        if type(strIn) != str:
-            raise Exception('Invalid input, needs to be an input string')
+    def parse(strIn:str):
+        # Check if the input str is a key/mode
+        colorMode = ColorMode.allModes.get(strIn)
+        if colorMode is None:
+            print('Input string ''%s'' is not a currently configured/valid ColorMode' % strIn)
+            return None
+        return colorMode
         
-        # Load in stored modes
-        allModeNames = [p.name for p in ColorMode.allModes]
 
 
 ### Private functions
