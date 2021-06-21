@@ -31,11 +31,14 @@ from math import pi, sqrt, cos, acos, atan, radians, degrees
 
 ### Initialize classes
 # Base color class for object checking
+baseColorPrefix = '_'
 class BaseColor(object):
-    pass
+    prefix = baseColorPrefix
 
 # Color class to store RGB/W or HIS values and convert from/to a hex string
 class ColorSolid(BaseColor):
+    colorPrefix = '' + BaseColor.prefix
+
     def __init__(self, red=None, green=None, blue=None, white=None, hue=0, saturation=1.0, intensity=1.0, enableWhite=True):
         # Pre allocate private variables
         self._red        = None # [0 - 255]
@@ -93,16 +96,16 @@ class ColorSolid(BaseColor):
 
     def toString(self, forceMode=None): # "crrggbb[ww]" or "hhhhsssiii[w]" in hex
         if (forceMode is not None and forceMode=='rgb') or self._inputType=='rgb':
-            return "c{:02x}{:02x}{:02x}".format(round(self.red),round(self.green),round(self.blue))
+            return ColorSolid.colorPrefix + "c{:02x}{:02x}{:02x}".format(round(self.red),round(self.green),round(self.blue))
         elif (forceMode is not None and forceMode=='rgbw') or self._inputType=='rgbw':
             white = self.white if self.white is not None else 0
-            return "c{:02x}{:02x}{:02x}{:02x}".format(round(self.red),round(self.green),round(self.blue),round(white))
+            return ColorSolid.colorPrefix + "c{:02x}{:02x}{:02x}{:02x}".format(round(self.red),round(self.green),round(self.blue),round(white))
         elif (forceMode is not None and forceMode=='hsi') or self._inputType=='hsi':
             hue = self.hue % 360 if not self.hue == 360 else 360 # allow '360' output, but mod otherwise, allowing for full circle interpolations
             if self._enableWhite == True: # add 'w' to the end to indicate this is a white-enabled hsi
-                return "h{:03x}{:03x}{:03x}w".format(round(hue),round(self.saturation*255),round(self.intensity*255))
+                return ColorSolid.colorPrefix + "h{:03x}{:03x}{:03x}w".format(round(hue),round(self.saturation*255),round(self.intensity*255))
             else:
-                return "h{:03x}{:03x}{:03x}".format(round(hue),round(self.saturation*255),round(self.intensity*255))
+                return ColorSolid.colorPrefix + "h{:03x}{:03x}{:03x}".format(round(hue),round(self.saturation*255),round(self.intensity*255))
     
     @property
     def red(self):
@@ -210,9 +213,11 @@ class ColorSolid(BaseColor):
         return self.toString() == other.toString()
         
     @staticmethod
-    def parse(strIn):
-        if type(strIn) != str or len(strIn)<=1:
-            raise Exception('Invalid input, needs to be an input string')
+    def parse(strIn:str):
+        # Remove prefix
+        if strIn.startswith(ColorSolid.colorPrefix):
+            strIn = strIn[len(ColorSolid.colorPrefix):]
+
         # Check for first character
         if strIn.lower().startswith('c'): # RGB color
             # Check for valid input
@@ -420,6 +425,8 @@ class ColorSolid(BaseColor):
 
 # Color gradients
 class ColorGradient(BaseColor):
+    colorPrefix = 'gr' + BaseColor.prefix
+
     def __init__(self, nodes=None, steps=0, interpMode='hsi'):
         self._nodes = None # initialize private property
         self._steps = steps # steps between EACH color (not total), val of 0 returns just list of nodes
@@ -452,7 +459,7 @@ class ColorGradient(BaseColor):
     def toString(self): # "color1,color2,colorN;steps" where 'color' is using ColorSolid's toString "rrggbb[ww]"
         if self.nodes is None:
             return ""
-        return (",".join([x.toString() for x in self.nodes]) + ";" + str(self.steps))
+        return ColorGradient.colorPrefix + (",".join([x.toString() for x in self.nodes]) + ";" + str(self.steps))
         
     def __repr__(self):
         return self.toString()
@@ -469,10 +476,11 @@ class ColorGradient(BaseColor):
             return linearInterpRgbw(self.nodes, self.steps)
     
     @staticmethod
-    def parse(strIn):
-        # Check for valid input
-        if type(strIn) != str:
-            raise Exception('Invalid input, needs to be an input string')
+    def parse(strIn:str):
+        # Remove prefix
+        if strIn.startswith(ColorGradient.colorPrefix):
+            strIn = strIn[len(ColorGradient.colorPrefix):]
+
         # Try to match our format by looking for an ';'
         strColors, strSteps = strIn.replace("(","").replace(")","").split(";",1)
         colors = [ColorSolid.parse(x) for x in strColors.split(',')]
@@ -482,20 +490,29 @@ class ColorGradient(BaseColor):
 # Special color definitions
 class ColorSpecial(BaseColor):
     allModes = []
+    colorPrefix = 'sp' + BaseColor.prefix
     
     def __init__(self, name, func=None):
         self.name = name
         self.func = func
         ColorSpecial.allModes.append(self)
     
-    @staticmethod
-    def parse(strIn):
-        # Check for valid input
-        if type(strIn) != str:
-            raise Exception('Invalid input, needs to be an input string')
+    def toString(self): # sp_[name]
+        return ColorSpecial.colorPrefix + self.name
         
-        # Load in stored modes
-        allModeNames = [p.name for p in ColorSpecial.allModes]
+    def __repr__(self):
+        return self.toString()
+    
+    def __eq__(self, other):
+        if not isinstance(other, ColorSpecial):
+            return NotImplemented # don't attempt to compare against unrelated types
+        return self.toString() == other.toString()
+    
+    @staticmethod
+    def parse(strIn:str):
+        # Remove prefix
+        if strIn.startswith(ColorSpecial.colorPrefix):
+            strIn = strIn[len(ColorSpecial.colorPrefix):]
 
 
 # Class to control the mode of the lights
