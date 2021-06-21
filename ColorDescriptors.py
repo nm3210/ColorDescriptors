@@ -608,10 +608,10 @@ class ColorMethod(object):
             # Try to parse each component
             modeRef = ColorMode.parse(modeStr)
             colorRef = BaseColor.parse(colorStr)
-            return modeRef, colorRef
+            return ColorMethod(modeRef, colorRef)
         except:
             print('Invalid input ''%s'', unable to parse into a ColorMethod' % strIn)
-            return None, None
+            return None
 
 
 ### ColorDescriptor Constants
