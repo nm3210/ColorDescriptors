@@ -613,6 +613,22 @@ class ColorMethod(object):
             return None, None
 
 
+### ColorDescriptor Constants
+# Define some basic colors
+ColorOff = ColorBlack = ColorSolid(intensity=0)
+ColorRed     = ColorSolid(hue=  0)
+ColorYellow  = ColorSolid(hue= 60)
+ColorGreen   = ColorSolid(hue=120)
+ColorCyan    = ColorSolid(hue=180)
+ColorBlue    = ColorSolid(hue=240)
+ColorMagenta = ColorSolid(hue=300)
+ColorWhite   = ColorSolid(saturation=0)
+
+
+# Define color modes
+ModeStationary = ColorMode('Stationary') # color does not move
+
+
 ### Private functions
 # Define the linear interpolation function (just off the web somewhere)
 def lerp(x, x0, x1, y0, y1):
