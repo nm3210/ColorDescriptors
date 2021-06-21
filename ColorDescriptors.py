@@ -22,7 +22,8 @@ Package classes:
     ColorSolid - basic color information in 8-bit RGBW or 12-bit HSI hex ('cff00ff00' or 'h12c0ff1fe')
     ColorGradient - creation of gradients via color nodes and steps between nodes
     ColorSpecial - special color modes (rainbow, gradient, etc.)
-    ColorMode - method to display the color (e.g. flat color, blinking, etc)
+    ColorMode - method to display the color (e.g. stationary, marquee, blinking, etc)
+    ColorMethod - combination of a 'mode' and a 'color' that can be transmitted and parsed together
     
 """
 
