@@ -203,6 +203,17 @@ class ColorSolid(BaseColor):
     @enableWhite.setter
     def enableWhite(self, valIn):
         self._enableWhite = valIn
+        
+        # Update the colors if the input type has now changed (white removed/added)
+        if self._enableWhite == True:
+            if self._inputType == 'rgbw' or self._inputType == 'rgb':
+                self._inputType = 'rgbw'
+                self._red, self._green, self._blue, self._white = ColorSolid.hsi2rgbw(self.hue,self.saturation,self.intensity)
+        else:
+            if self._inputType == 'rgbw' or self._inputType == 'rgb':
+                self._inputType = 'rgb'
+                self._white = None
+                self._red, self._green, self._blue = ColorSolid.hsi2rgb(self.hue,self.saturation,self.intensity)
 
     def __repr__(self):
         return self.toString()
