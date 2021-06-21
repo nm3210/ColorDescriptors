@@ -28,12 +28,34 @@ Package classes:
 
 ### Import modules
 from math import pi, sqrt, cos, acos, atan, radians, degrees
+import re
 
 ### Initialize classes
 # Base color class for object checking
 baseColorPrefix = '_'
 class BaseColor(object):
     prefix = baseColorPrefix
+    parsingRegex = re.compile(r'^(.*?)(?:' + baseColorPrefix + r')')
+
+    def toString(self):
+        return ''
+    
+    @staticmethod
+    def parse(strIn:str):
+        # Pull out the characters before the '_' (which I'm using as a prefix separater)
+        regexSearch = BaseColor.parsingRegex.search(strIn)
+        if regexSearch is None:
+            print('Unable to parse input string ''%s''' % strIn)
+            return None
+        prefixText = regexSearch.group(0)
+
+        # Switch over the different cases
+        if   prefixText == ColorSolid.colorPrefix:
+            return ColorSolid.parse(strIn)
+        elif prefixText == ColorGradient.colorPrefix:
+            return ColorGradient.parse(strIn)
+        elif prefixText == ColorSpecial.colorPrefix:
+            return ColorSpecial.parse(strIn)
 
 # Color class to store RGB/W or HIS values and convert from/to a hex string
 class ColorSolid(BaseColor):
