@@ -558,12 +558,20 @@ class ColorSpecial(BaseColor):
 class ColorMode(object):
     allModes = {}
     
-    def __init__(self, name:str):
+    def __init__(self, name:str, value:str=''):
+        # Parse the input name, whether it includes any special '{}'
+        if '{' in name:
+            splitName = name.split('{',1)
+            name = splitName[0]
+            value = splitName[1].replace('}','')
         self.name = name
+        self._value = value # (in str value)
         ColorMode.allModes[name] = self # keep track of all configured modes
     
-    def toString(self):
-        return self.name
+    def toString(self): # '[ColorMode]{[Value]}'
+        if self.value is None or not self.value:
+            return self.name
+        return self.name + '{' + self.value + '}'
         
     def __repr__(self):
         return self.toString()
@@ -573,13 +581,35 @@ class ColorMode(object):
             return NotImplemented # don't attempt to compare against unrelated types
         return self.toString() == other.toString()
     
+    @property
+    def value(self):
+        return self._value
+        
+    @value.setter
+    def value(self, valIn):
+        self._value = valIn
+        # Re-save the stored value
+        ColorMode.allModes[self.name] = self # keep track of all configured modes
+        
     @staticmethod
     def parse(strIn:str):
+        value = ''
+        if '{' in strIn: # remove characters after {
+            splitVals = strIn.split('{',1)
+            strIn = splitVals[0]
+            value = splitVals[1][:-1]
+            
         # Check if the input str is a key/mode
         colorMode = ColorMode.allModes.get(strIn)
         if colorMode is None:
             print('Input string ''%s'' is not a currently configured/valid ColorMode' % strIn)
             return None
+            
+        # Update the value
+        if value is not None and bool(value):
+            colorMode.value = value
+        
+        # Return
         return colorMode
 
 # Create class to combine a color mode with a color method
