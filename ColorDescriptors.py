@@ -619,7 +619,7 @@ class ColorMethod(object):
         self.color = inputColor
 
     def toString(self): # '[ColorMode] [Color]'
-        return self.mode.toString() + ' ' + self.color.toString()
+        return self.mode.toString() + ''.join([' ' + clr.toString() for clr in self.color])
         
     def __repr__(self):
         return self.toString()
@@ -632,12 +632,13 @@ class ColorMethod(object):
     @staticmethod
     def parse(strIn:str):
         try:
-            # Split into components, input should be [ColorMode + ' ' + BaseColor]
-            [modeStr, colorStr] = strIn.split(' ') # brackets are because I'm used to matlab requiring them...
+            # Split into components, input should be [ColorMode + [' ' + BaseColor]]
+            items = strIn.split(' ')
+            [modeStr, colorStr] = (items[0], items[1:])
 
             # Try to parse each component
             modeRef = ColorMode.parse(modeStr)
-            colorRef = BaseColor.parse(colorStr)
+            colorRef = [BaseColor.parse(clr) for clr in colorStr]
             return ColorMethod(modeRef, colorRef)
         except:
             print('Invalid input ''%s'', unable to parse into a ColorMethod' % strIn)
